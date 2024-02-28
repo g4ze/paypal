@@ -1,0 +1,47 @@
+  version: '3.8'
+  services:
+    paypal_mongodb:
+      container_name: paypal_mongodb
+      image: mongo:5
+      ports:
+        - "27017:27017"
+      command: --quiet --replSet rs0
+
+      networks:
+        - paypal-network
+      volumes:
+        - mongodb-data:/data/db
+    paypal_backend:
+      container_name: paypal_backend
+      image: g4ze/paypal_backend:latest
+      ports:
+        - "3000:3000"
+      depends_on:
+        - paypal_mongodb
+      networks:
+        - paypal-network
+    mongo_setup:
+      container_name: mongo_setup
+      image: mongo:5
+      command: >
+        bash -c "
+          sleep 10;
+          mongo --host paypal_mongodb --eval '
+            rs.initiate({
+              _id: \"rs0\",
+              members: [{ _id: 0, host: \"paypal_mongodb:27017\" }]
+            })
+          ';
+        "
+
+      depends_on:
+        - paypal_mongodb
+      networks:
+        - paypal-network
+
+  networks:
+    paypal-network:
+      driver: bridge
+
+  volumes:
+    mongodb-data:
