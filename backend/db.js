@@ -1,4 +1,4 @@
-// backend/db.js
+// backend/db.js hello
 
 const mongoose = require('mongoose');
 mongoose.connect("mongodb://paypal_mongodb:27017/paypal")
